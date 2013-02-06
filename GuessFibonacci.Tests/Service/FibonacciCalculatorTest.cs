@@ -60,7 +60,24 @@ namespace GuessFibonacci.Tests.Service
             catch (Exception e)
             {
                 //then
-                Assert.AreEqual("Term is greater than maximum [100]", e.Message);
+                Assert.AreEqual("Term must be between 1 and 100.", e.Message);
+                return;
+            }
+            Assert.Fail();
+        }
+
+        [TestMethod]
+        public void TestLessThanOne()
+        {
+            //when
+            try
+            {
+                calculator.Calculate(0);
+            }
+            catch (Exception e)
+            {
+                //then
+                Assert.AreEqual("Term must be between 1 and 100.", e.Message);
                 return;
             }
             Assert.Fail();

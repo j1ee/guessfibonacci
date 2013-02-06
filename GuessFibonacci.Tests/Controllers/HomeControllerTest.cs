@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using GuessFibonacci;
 using GuessFibonacci.Controllers;
 using GuessFibonacci.Service;
+using GuessFibonacci.Models;
 
 namespace GuessFibonacci.Tests.Controllers
 {
@@ -16,15 +17,15 @@ namespace GuessFibonacci.Tests.Controllers
         private HomeController controller;
         private Moq.Mock<OrdinalSuffixProvider> mockOrdinalSuffixProvider;
         private Moq.Mock<RandomNumberGenerator> mockGenerator;
-        private Moq.Mock<FibonacciCalculator> mockFibonacciCalculator;
+        private Moq.Mock<GuessService> mockGuessService;
 
         [TestInitialize]
         public void SetUp()
         {
             mockOrdinalSuffixProvider = new Moq.Mock<OrdinalSuffixProvider>();
             mockGenerator = new Moq.Mock<RandomNumberGenerator>(null, null, null);
-            mockFibonacciCalculator = new Moq.Mock<FibonacciCalculator>(null);
-            controller = new HomeController(mockGenerator.Object, mockOrdinalSuffixProvider.Object, mockFibonacciCalculator.Object);
+            mockGuessService = new Moq.Mock<GuessService>(null);
+            controller = new HomeController(mockGenerator.Object, mockOrdinalSuffixProvider.Object, mockGuessService.Object);
         }
 
 
@@ -47,7 +48,12 @@ namespace GuessFibonacci.Tests.Controllers
         public void SubmitCorrect()
         {
             // given
-            mockFibonacciCalculator.Setup(framework => framework.Calculate(2)).Returns(1);
+            var mockResult = new Moq.Mock<GuessResult>();
+            mockResult.Setup(framework => framework.isCorrect()).Returns(true);
+            mockResult.Object.correctResult = 1;
+            mockResult.Object.term = 2;
+
+            mockGuessService.Setup(framework => framework.SubmitGuess(2, 1)).Returns(mockResult.Object);
             mockOrdinalSuffixProvider.Setup(framework => framework.GetSuffix(2)).Returns("nd");
 
             // when
@@ -61,31 +67,20 @@ namespace GuessFibonacci.Tests.Controllers
         }
 
         [TestMethod]
-        public void SubmitIncorrectGuessTooLow()
+        public void SubmitIncorrect()
         {
             // given
-            mockFibonacciCalculator.Setup(framework => framework.Calculate(5)).Returns(6);
-            mockOrdinalSuffixProvider.Setup(framework => framework.GetSuffix(5)).Returns("th");
+            var mockResult = new Moq.Mock<GuessResult>();
+            mockResult.Setup(framework => framework.isCorrect()).Returns(false);
+            mockResult.Setup(framework => framework.CalculateDifference()).Returns(9);
+            mockGuessService.Setup(framework => framework.SubmitGuess(2, 1)).Returns(mockResult.Object);
 
             // when
-            ViewResult result = controller.Submit(5, "4") as ViewResult;
+            ViewResult result = controller.Submit(2, "1") as ViewResult;
 
             // then
             Assert.AreEqual("Incorrect", result.ViewName);
-            Assert.AreEqual(2, result.ViewBag.Difference);
-        }
-
-        [TestMethod]
-        public void SubmitIncorrectGuessTooHigh()
-        {
-            // given
-            mockFibonacciCalculator.Setup(framework => framework.Calculate(5)).Returns(2);
-            
-            // when
-            ViewResult result = controller.Submit(5, "4") as ViewResult;
-
-            // then
-            Assert.AreEqual(2, result.ViewBag.Difference);
+            Assert.AreEqual(9, result.ViewBag.Difference);
         }
 
         [TestMethod]

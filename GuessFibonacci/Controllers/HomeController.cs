@@ -4,20 +4,21 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using GuessFibonacci.Service;
+using GuessFibonacci.Models;
 
 namespace GuessFibonacci.Controllers
 {
     public class HomeController : Controller
     {
+        private GuessService guessService;
         private RandomNumberGenerator randomNumberGenerator;
         private OrdinalSuffixProvider ordinalSuffixProvider;
-        private FibonacciCalculator fibonacciCalculator;
 
-        public HomeController(RandomNumberGenerator randomNumberGenerator, OrdinalSuffixProvider ordinalSuffixProvider, FibonacciCalculator fibonacciCalculator)
+        public HomeController(RandomNumberGenerator randomNumberGenerator, OrdinalSuffixProvider ordinalSuffixProvider, GuessService guessService)
         {
             this.randomNumberGenerator = randomNumberGenerator;
             this.ordinalSuffixProvider = ordinalSuffixProvider;
-            this.fibonacciCalculator = fibonacciCalculator;
+            this.guessService = guessService;
         }
 
         public ActionResult Index()
@@ -30,42 +31,43 @@ namespace GuessFibonacci.Controllers
 
         public ActionResult Submit(int term, string guess)
         {
-            ViewBag.Term = term;
-            ViewBag.Suffix = ordinalSuffixProvider.GetSuffix(term);
-            int guessInt;
-            try
+            if(IsInvalidGuess(guess))
             {
-                guessInt = int.Parse(guess);
-            }
-            catch (Exception)
-            {
+                ViewBag.Term = term;
+                ViewBag.Suffix = ordinalSuffixProvider.GetSuffix(term);
                 ViewBag.ValidationError = "Your guess must be an integer";
                 return View("Index");
             }
 
-            var correctValue = fibonacciCalculator.Calculate(term);
-            if (correctValue == guessInt)
+            var result = guessService.SubmitGuess(term, int.Parse(guess));
+            return HandleGuessResult(result);
+        }
+
+        private ActionResult HandleGuessResult(GuessResult result)
+        {
+            if (result.isCorrect())
             {
-                ViewBag.Value = correctValue;
+                ViewBag.Value = result.correctResult;
+                ViewBag.Term = result.term;
+                ViewBag.Suffix = ordinalSuffixProvider.GetSuffix(result.term);
                 return View("Correct");
             }
-            ViewBag.Difference = CalculateDifference(correctValue, guessInt);
+            ViewBag.Difference = result.CalculateDifference();
             return View("Incorrect");
         }
 
-        private string TermWithSuffix(int term)
+        private bool IsInvalidGuess(string guess)
         {
-            return term + ordinalSuffixProvider.GetSuffix(term);
-        }
-
-        private int CalculateDifference(int correct, int guess)
-        {
-            var difference = correct - guess;
-            if (difference < 0)
+            try
             {
-                difference = -1 * difference;
+                int.Parse(guess);
+                return false;
             }
-            return difference;
+            catch (Exception)
+            {
+                return true;
+            }
         }
+ 
     }
 }

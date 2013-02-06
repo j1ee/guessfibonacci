@@ -16,8 +16,8 @@ namespace GuessFibonacci.Service
 
         public virtual int Calculate(int term)
         {
-            if(term > max){
-                throw new Exception("Term is greater than maximum [" + max + "]");
+            if(term < 1 || term > max){
+                throw new Exception("Term must be between 1 and " + max + ".");
             }
             if (term < 3)
             {

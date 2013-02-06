@@ -99,6 +99,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Controllers\HomeControllerTest.cs" />
     <Compile Include="Service\FibonacciCalculatorTest.cs" />
+    <Compile Include="Service\GuessServiceTest.cs" />
     <Compile Include="Service\OrdinalSuffixProviderTest.cs" />
     <Compile Include="Service\RandomNumberGeneratorTest.cs" />
   </ItemGroup>
