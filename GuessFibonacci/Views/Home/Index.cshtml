@@ -1,0 +1,23 @@
+﻿
+@{
+    ViewBag.Title = "Take a guess!";
+}
+<section class="featured">
+    <div class="content-wrapper">
+        <hgroup class="title">
+            <h1>@ViewBag.Title</h1>
+        </hgroup>
+        <p>Can you guess what the @ViewBag.Term@ViewBag.Suffix term is?</p>
+        @using (Html.BeginForm("Submit","Home")) {
+            <input type="hidden" name="term" value="@ViewBag.Term" />
+            <fieldset>
+            <legend>Take a guess!</legend>
+            <div class="editor-field">
+                <input name="guess" type="number" step="1" min="0" required="required" />
+                <div class="error">@ViewBag.ValidationError</div>
+            </div>
+            <input type="submit" value="Submit" />
+            </fieldset>
+        }
+    </div>
+</section>

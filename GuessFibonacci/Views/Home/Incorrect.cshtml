@@ -1,0 +1,15 @@
+﻿
+@{
+    ViewBag.Title = "Incorrect!";
+}
+<section class="featured">
+    <div class="content-wrapper">
+        <hgroup class="title">
+            <h1>That's not right.</h1>
+            <p>You were only @ViewBag.Difference out.</p>
+            <p>Instead of guessing, work it out!</p>
+            <p>The Fibonacci sequence has 1 for its first and second terms. Each term after that is the sum of the previous two.</p>
+            @Html.ActionLink("Try another?", "Index", "Home")
+        </hgroup>
+    </div>
+</section>

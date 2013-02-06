@@ -1,0 +1,13 @@
+﻿
+@{
+    ViewBag.Title = "Correct!";
+}
+<section class="featured">
+    <div class="content-wrapper">
+        <hgroup class="title">
+            <h1>That's right!</h1>
+            <p>Bravo! The @ViewBag.Term@ViewBag.Suffix term is indeed @ViewBag.Value!</p>
+            @Html.ActionLink("Try another?", "Index", "Home")
+        </hgroup>
+    </div>
+</section>
