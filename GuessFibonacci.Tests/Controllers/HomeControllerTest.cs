@@ -18,6 +18,7 @@ namespace GuessFibonacci.Tests.Controllers
         private Moq.Mock<OrdinalSuffixProvider> mockOrdinalSuffixProvider;
         private Moq.Mock<RandomNumberGenerator> mockGenerator;
         private Moq.Mock<GuessService> mockGuessService;
+        private Moq.Mock<ControllerContext> mockControllerContext;
 
         [TestInitialize]
         public void SetUp()
@@ -26,6 +27,8 @@ namespace GuessFibonacci.Tests.Controllers
             mockGenerator = new Moq.Mock<RandomNumberGenerator>(null, null, null);
             mockGuessService = new Moq.Mock<GuessService>(null);
             controller = new HomeController(mockGenerator.Object, mockOrdinalSuffixProvider.Object, mockGuessService.Object);
+            mockControllerContext = new Moq.Mock<ControllerContext>();
+            controller.ControllerContext = mockControllerContext.Object;
         }
 
 
@@ -33,6 +36,7 @@ namespace GuessFibonacci.Tests.Controllers
         public void IndexProvidesTermWithOrdinalSuffix()
         {
             // given
+            mockControllerContext.SetupGet(p => p.HttpContext.Session["term"]).Returns(new Dictionary<String,Object>());
             mockGenerator.Setup(framework => framework.Generate()).Returns(5);
             mockOrdinalSuffixProvider.Setup(framework => framework.GetSuffix(5)).Returns("th");
 
@@ -48,6 +52,7 @@ namespace GuessFibonacci.Tests.Controllers
         public void SubmitCorrect()
         {
             // given
+            mockControllerContext.SetupGet(p => p.HttpContext.Session["term"]).Returns(2);
             var mockResult = new Moq.Mock<GuessResult>();
             mockResult.Setup(framework => framework.isCorrect()).Returns(true);
             mockResult.Object.correctResult = 1;
@@ -57,7 +62,7 @@ namespace GuessFibonacci.Tests.Controllers
             mockOrdinalSuffixProvider.Setup(framework => framework.GetSuffix(2)).Returns("nd");
 
             // when
-            ViewResult result = controller.Submit(2, "1") as ViewResult;
+            ViewResult result = controller.Submit("1") as ViewResult;
 
             // then
             Assert.AreEqual("Correct", result.ViewName);
@@ -70,13 +75,14 @@ namespace GuessFibonacci.Tests.Controllers
         public void SubmitIncorrect()
         {
             // given
+            mockControllerContext.SetupGet(p => p.HttpContext.Session["term"]).Returns(2);
             var mockResult = new Moq.Mock<GuessResult>();
             mockResult.Setup(framework => framework.isCorrect()).Returns(false);
             mockResult.Setup(framework => framework.CalculateDifference()).Returns(9);
             mockGuessService.Setup(framework => framework.SubmitGuess(2, 1)).Returns(mockResult.Object);
 
             // when
-            ViewResult result = controller.Submit(2, "1") as ViewResult;
+            ViewResult result = controller.Submit("1") as ViewResult;
 
             // then
             Assert.AreEqual("Incorrect", result.ViewName);
@@ -87,10 +93,11 @@ namespace GuessFibonacci.Tests.Controllers
         public void SubmitNotNumeric()
         {
             // given
+            mockControllerContext.SetupGet(p => p.HttpContext.Session["term"]).Returns(2);
             mockOrdinalSuffixProvider.Setup(framework => framework.GetSuffix(2)).Returns("nd");
 
             // when
-            ViewResult result = controller.Submit(2, "abc") as ViewResult;
+            ViewResult result = controller.Submit("abc") as ViewResult;
 
             // then
             Assert.AreEqual("Index", result.ViewName);

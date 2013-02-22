@@ -24,22 +24,29 @@ namespace GuessFibonacci.Controllers
         public ActionResult Index()
         {
             var term = randomNumberGenerator.Generate();
+            Session["term"] = term;
             ViewBag.Term = term;
             ViewBag.Suffix = ordinalSuffixProvider.GetSuffix(term);
             return View();
         }
 
-        public ActionResult Submit(int term, string guess)
+        public ActionResult Submit(string guess)
         {
+            var term = Session["term"];
+            if (term == null)
+            {
+                return RedirectToAction("Index");
+            }
+            var termInt = (int)term;
             if(IsInvalidGuess(guess))
             {
                 ViewBag.Term = term;
-                ViewBag.Suffix = ordinalSuffixProvider.GetSuffix(term);
+                ViewBag.Suffix = ordinalSuffixProvider.GetSuffix(termInt);
                 ViewBag.ValidationError = "Your guess must be an integer";
                 return View("Index");
             }
 
-            var result = guessService.SubmitGuess(term, int.Parse(guess));
+            var result = guessService.SubmitGuess(termInt, int.Parse(guess));
             return HandleGuessResult(result);
         }
 
@@ -68,6 +75,6 @@ namespace GuessFibonacci.Controllers
                 return true;
             }
         }
- 
-    }
+     }
+
 }
